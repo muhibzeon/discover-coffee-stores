@@ -7,7 +7,12 @@ import Card from "../Components/card";
 
 import coffeeStoresData from "../data/coffee-stores.json";
 import { fetchCoffeeStores } from "../lib/coffee-stores";
+import useTrackLocation from "../hooks/use-track-location";
+import { useEffect } from "react";
 
+//####Home Page####
+
+//SO this is server side
 export async function getStaticProps(context) {
   const coffeeStores = await fetchCoffeeStores();
   return {
@@ -16,9 +21,46 @@ export async function getStaticProps(context) {
 }
 
 export default function Home(props) {
+  //Get Location from Geo location API - automated location
+  const { handleTrackLocation, latLong, locationErrMsg, isFindingLocation } =
+    useTrackLocation();
+
+  //Button 'View Available Stores' handling
   const handleBannerBtnOnClick = () => {
-    console.log("Hi there");
+    handleTrackLocation();
   };
+
+  console.log(
+    latLong
+      .split(",")
+      .map((item) => item.trim())
+      .join(",")
+  );
+
+  //Lets modify the Latlong(just removing a space)
+  const modifiedLatLong = latLong
+    .split(",")
+    .map((item) => item.trim())
+    .join(",");
+
+  //re-render the Home Page whenever the LatLong changes, i. e user clicks View Coffee store in a new location
+  useEffect(() => {
+    async function setCoffeeStoresByLocation() {
+      if (modifiedLatLong) {
+        try {
+          const fetchedCoffeeStores = await fetchCoffeeStores(
+            modifiedLatLong,
+            40
+          );
+          console.log({ fetchedCoffeeStores });
+        } catch (error) {
+          console.log("error: ", { error });
+        }
+      }
+    }
+    setCoffeeStoresByLocation();
+  }, [modifiedLatLong]);
+
   return (
     <div className={styles.container}>
       <Head>
@@ -29,9 +71,14 @@ export default function Home(props) {
 
       <main className={styles.main}>
         <Banner
-          buttonText="view available stores"
+          /* This is the button,  checking against the passed prop(state) isFindingLocation from use-track-location.js*/
+          buttonText={
+            isFindingLocation ? "Locating..." : "view available stores"
+          }
           handleOnClick={handleBannerBtnOnClick}
         />
+        {/*Throw an Error Message if Geo Location API fails.*/}
+        {locationErrMsg && <p>Something Went Wrong: {locationErrMsg}</p>}
         <div className={styles.heroImage}>
           <Image
             src="/static/hero-image.png"
@@ -40,8 +87,10 @@ export default function Home(props) {
             alt="ahero"
           />
         </div>
+
+        {/**If the number of returned coffee stores are more than 0 then show them as Cards */}
         {props.coffeeStores.length > 0 && (
-          <div>
+          <div className={styles.sectionWrapper}>
             <h2 className={styles.heading2}>Toronto Store</h2>
             <div className={styles.cardLayout}>
               {props.coffeeStores.map((coffeeStore) => (

@@ -1,4 +1,4 @@
-//Individual Coffee Store page after clicking
+//Individual Coffee Store page after clicking you will see this
 
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -10,6 +10,9 @@ import cls from "classnames";
 
 import { fetchCoffeeStores } from "../../lib/coffee-stores";
 
+//So similar to index.js(Home Page) we again have to call getStatic props
+//The difference is we have to match the clicked stores id and according to that
+//We will show the extended infos of that store
 export async function getStaticProps(staticProps) {
   const params = staticProps.params;
   const coffeeStores = await fetchCoffeeStores();
@@ -22,6 +25,8 @@ export async function getStaticProps(staticProps) {
   };
 }
 
+//Why this method?
+//if a page has Dynamic Routes and uses getStaticProps, it needs to define a list of paths to be statically generated.
 export async function getStaticPaths() {
   const coffeeStores = await fetchCoffeeStores();
   const paths = coffeeStores.map((coffeestore) => {
@@ -37,9 +42,11 @@ export async function getStaticPaths() {
   };
 }
 
+//Here comes the Coffee Store show method
 const CoffeeStore = (props) => {
   const router = useRouter();
 
+  //Check the fall back state
   if (router.isFallback) {
     return <div>Loading</div>;
   }
@@ -79,17 +86,32 @@ const CoffeeStore = (props) => {
         </div>
         <div className={cls("glass", styles.col2)}>
           <div className={styles.iconWrapper}>
-            <Image src="/static/icons/places.svg" width="24" height="24" />
+            <Image
+              src="/static/icons/places.svg"
+              width="24"
+              height="24"
+              alt="icon"
+            />
             <p className={styles.text}>{location.formatted_address}</p>
           </div>
 
           <div className={styles.iconWrapper}>
-            <Image src="/static/icons/nearMe.svg" width="24" height="24" />
+            <Image
+              src="/static/icons/nearMe.svg"
+              width="24"
+              height="24"
+              alt="icon"
+            />
             <p className={styles.text}>{location.region}</p>
           </div>
 
           <div className={styles.iconWrapper}>
-            <Image src="/static/icons/star.svg" width="24" height="24" />
+            <Image
+              src="/static/icons/star.svg"
+              width="24"
+              height="24"
+              alt="icon"
+            />
             <p className={styles.text}>1</p>
           </div>
 
