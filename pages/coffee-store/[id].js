@@ -15,12 +15,17 @@ import { fetchCoffeeStores } from "../../lib/coffee-stores";
 //We will show the extended infos of that store
 export async function getStaticProps(staticProps) {
   const params = staticProps.params;
+  //console.log("params", params);
+
   const coffeeStores = await fetchCoffeeStores();
+  //console.log(coffeeStores);
+  const findCoffeeStoresById = coffeeStores.find((coffeeStore) => {
+    return coffeeStore.fsq_id.toString() === params.id;
+  });
+
   return {
     props: {
-      coffeeStore: coffeeStores.find(
-        (coffeeStore) => coffeeStore.fsq_id.toString() === params.id
-      ),
+      coffeeStore: findCoffeeStoresById ? findCoffeeStoresById : {},
     },
   };
 }

@@ -8,7 +8,8 @@ import Card from "../Components/card";
 import coffeeStoresData from "../data/coffee-stores.json";
 import { fetchCoffeeStores } from "../lib/coffee-stores";
 import useTrackLocation from "../hooks/use-track-location";
-import { useEffect } from "react";
+import { useEffect, useState, useContext } from "react";
+import { ACTION_TYPE, StoreContext } from "./_app";
 
 //####Home Page####
 
@@ -22,13 +23,23 @@ export async function getStaticProps(context) {
 
 export default function Home(props) {
   //Get Location from Geo location API - automated location
-  const { handleTrackLocation, latLong, locationErrMsg, isFindingLocation } =
+  const { handleTrackLocation, locationErrMsg, isFindingLocation } =
     useTrackLocation();
 
   //Button 'View Available Stores' handling
   const handleBannerBtnOnClick = () => {
     handleTrackLocation();
   };
+
+  //get the context from _app.js
+  const { dispatch, state } = useContext(StoreContext);
+  const { coffeeStores, latLong } = state;
+
+  //const latLong = ``;
+  //Set the fetched coffee stores according to the Geo API to a state
+  //## We aren't using local state anymore
+  //const [stateCoffeeStores, setStateCoffeeStores] = useState("");
+  const [coffeeStoreError, setCoffeeStoreError] = useState(null);
 
   console.log(
     latLong
@@ -43,7 +54,7 @@ export default function Home(props) {
     .map((item) => item.trim())
     .join(",");
 
-  //re-render the Home Page whenever the LatLong changes, i. e user clicks View Coffee store in a new location
+  //re-render the Home Page whenever the LatLong changes, i.e user clicks View Coffee store in a new location
   useEffect(() => {
     async function setCoffeeStoresByLocation() {
       if (modifiedLatLong) {
@@ -53,8 +64,16 @@ export default function Home(props) {
             40
           );
           console.log({ fetchedCoffeeStores });
+          //setStateCoffeeStores(fetchedCoffeeStores);
+          dispatch({
+            type: ACTION_TYPE.SET_COFFEE_STORES,
+            payload: {
+              coffeeStores: fetchedCoffeeStores,
+            },
+          });
         } catch (error) {
           console.log("error: ", { error });
+          setCoffeeStoreError(error.message);
         }
       }
     }
@@ -79,6 +98,7 @@ export default function Home(props) {
         />
         {/*Throw an Error Message if Geo Location API fails.*/}
         {locationErrMsg && <p>Something Went Wrong: {locationErrMsg}</p>}
+        {coffeeStoreError && <p>Something Went Wrong: {coffeeStoreError}</p>}
         <div className={styles.heroImage}>
           <Image
             src="/static/hero-image.png"
@@ -89,6 +109,25 @@ export default function Home(props) {
         </div>
 
         {/**If the number of returned coffee stores are more than 0 then show them as Cards */}
+        {coffeeStores.length > 0 && (
+          <div className={styles.sectionWrapper}>
+            <h2 className={styles.heading2}>Stores near me</h2>
+            <div className={styles.cardLayout}>
+              {coffeeStores.map((coffeeStore) => (
+                <Card
+                  key={coffeeStore.fsq_id}
+                  name={coffeeStore.name}
+                  imgUrl={
+                    coffeeStore.imgUrl ||
+                    "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
+                  }
+                  href={`/coffee-store/${coffeeStore.fsq_id}`}
+                  className={styles.card}
+                />
+              ))}
+            </div>
+          </div>
+        )}
         {props.coffeeStores.length > 0 && (
           <div className={styles.sectionWrapper}>
             <h2 className={styles.heading2}>Toronto Store</h2>
