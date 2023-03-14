@@ -1,7 +1,7 @@
 //Geo Location API to get Lat and Long
 
 import { useContext, useState } from "react";
-import { ACTION_TYPE, StoreContext } from "../pages/_app";
+import { ACTION_TYPE, StoreContext } from "../store/store-context";
 
 const useTrackLocation = () => {
   const [locationErrMsg, setLocationErrMsg] = useState("");

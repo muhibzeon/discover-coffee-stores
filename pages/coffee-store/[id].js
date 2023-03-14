@@ -9,6 +9,9 @@ import styles from "../../styles/coffee-store.module.css";
 import cls from "classnames";
 
 import { fetchCoffeeStores } from "../../lib/coffee-stores";
+import { useContext, useEffect, useState } from "react";
+import { StoreContext } from "../../store/store-context";
+import { isEmpty } from "../../utils";
 
 //So similar to index.js(Home Page) we again have to call getStatic props
 //The difference is we have to match the clicked stores id and according to that
@@ -48,8 +51,30 @@ export async function getStaticPaths() {
 }
 
 //Here comes the Coffee Store show method
-const CoffeeStore = (props) => {
+const CoffeeStore = (initialProps) => {
   const router = useRouter();
+
+  //###So here we are trying to render the coffee stores from the Context
+  const id = router.query.id;
+  const [kaffeeStore, setKaffeStore] = useState(initialProps.coffeeStore);
+  const {
+    state: { coffeeStores },
+  } = useContext(StoreContext);
+
+  useEffect(() => {
+    if (isEmpty(initialProps.coffeeStore)) {
+      //This coffeeStores is from the context
+      if (coffeeStores.length > 0) {
+        const findCoffeeStoresById = coffeeStores.find((coffeeStore) => {
+          return coffeeStore.id.toString() === id; //this id is from the url
+        });
+
+        setKaffeStore(findCoffeeStoresById);
+      }
+    }
+  }, [id]);
+
+  //###Till here
 
   //Check the fall back state
   if (router.isFallback) {
@@ -60,7 +85,7 @@ const CoffeeStore = (props) => {
     console.log("Button clicked");
   };
 
-  const { location, name, imgUrl } = props.coffeeStore;
+  const { location, name, imgUrl } = kaffeeStore;
 
   return (
     <div className={styles.layout}>

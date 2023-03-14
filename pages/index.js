@@ -9,7 +9,7 @@ import coffeeStoresData from "../data/coffee-stores.json";
 import { fetchCoffeeStores } from "../lib/coffee-stores";
 import useTrackLocation from "../hooks/use-track-location";
 import { useEffect, useState, useContext } from "react";
-import { ACTION_TYPE, StoreContext } from "./_app";
+import { ACTION_TYPE, StoreContext } from "../store/store-context";
 
 //####Home Page####
 
@@ -61,7 +61,7 @@ export default function Home(props) {
         try {
           const fetchedCoffeeStores = await fetchCoffeeStores(
             modifiedLatLong,
-            40
+            30
           );
           console.log({ fetchedCoffeeStores });
           //setStateCoffeeStores(fetchedCoffeeStores);
