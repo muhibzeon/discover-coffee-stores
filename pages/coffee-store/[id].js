@@ -65,14 +65,14 @@ const CoffeeStore = (initialProps) => {
     if (isEmpty(initialProps.coffeeStore)) {
       //This coffeeStores is from the context
       if (coffeeStores.length > 0) {
-        const findCoffeeStoresById = coffeeStores.find((coffeeStore) => {
+        const coffeeStoreFromContext = coffeeStores.find((coffeeStore) => {
           return coffeeStore.id.toString() === id; //this id is from the url
         });
-
-        setKaffeStore(findCoffeeStoresById);
+        setKaffeStore(coffeeStoreFromContext);
+        //handleCreateCoffeeStore(coffeeStoreFromContext);
       }
     }
-  }, [id]);
+  }, [id, initialProps.coffeeStore]);
 
   //###Till here
 
@@ -84,6 +84,47 @@ const CoffeeStore = (initialProps) => {
   const handleUpVoteButton = () => {
     console.log("Button clicked");
   };
+
+  //console.log(kaffeeStore);
+
+  //Add the data to the database
+  const handleCreateCoffeeStore = async (coffeeStore) => {
+    try {
+      console.log(coffeeStore);
+
+      const { fsq_id, location, name, imgUrl } = coffeeStore;
+      const id = fsq_id;
+      const region = location.region;
+      const address = location.formatted_address;
+
+      const response = await fetch("/api/createCoffeeStore", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+          name,
+          address,
+          region,
+          voting: 0,
+          imgUrl,
+        }),
+      });
+
+      const dbCoffeeStore = await response.json();
+      console.log({ dbCoffeeStore });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  if (isEmpty(initialProps.coffeeStore)) {
+    handleCreateCoffeeStore(kaffeeStore);
+  } else {
+    //SSG
+    handleCreateCoffeeStore(initialProps.coffeeStore);
+  }
 
   const { location, name, imgUrl } = kaffeeStore;
 
