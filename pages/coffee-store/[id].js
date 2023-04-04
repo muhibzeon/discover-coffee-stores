@@ -8,6 +8,8 @@ import Image from "next/image";
 import styles from "../../styles/coffee-store.module.css";
 import cls from "classnames";
 
+import useSWR from "swr";
+
 import { fetchCoffeeStores } from "../../lib/coffee-stores";
 import { useContext, useEffect, useState } from "react";
 import { StoreContext } from "../../store/store-context";
@@ -81,16 +83,12 @@ const CoffeeStore = (initialProps) => {
     return <div>Loading</div>;
   }
 
-  const handleUpVoteButton = () => {
-    console.log("Button clicked");
-  };
-
   //console.log(kaffeeStore);
 
   //Add the data to the database
   const handleCreateCoffeeStore = async (coffeeStore) => {
     try {
-      console.log(coffeeStore);
+      //console.log(coffeeStore);
 
       const { fsq_id, location, name, imgUrl } = coffeeStore;
       const id = fsq_id;
@@ -113,7 +111,7 @@ const CoffeeStore = (initialProps) => {
       });
 
       const dbCoffeeStore = await response.json();
-      console.log({ dbCoffeeStore });
+      //console.log({ dbCoffeeStore });
     } catch (err) {
       console.log(err);
     }
@@ -127,6 +125,43 @@ const CoffeeStore = (initialProps) => {
   }
 
   const { location, name, imgUrl } = kaffeeStore;
+
+  const [votingCount, setVotingCount] = useState(1);
+
+  const fetcher = (url) => fetch(url).then((res) => res.json());
+  const { data, error } = useSWR(`/api/getCoffeeStorebyId?id=${id}`, fetcher);
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      const { address, id, imageUrl, name, region, voting } = data[0];
+
+      const modifiedData = {
+        fsq_id: id,
+        location: {
+          region,
+          formatted_address: address,
+        },
+        name,
+        imageUrl,
+        voting,
+      };
+
+      console.log(data[0]);
+
+      setKaffeStore(modifiedData);
+      setVotingCount(data[0].voting);
+    }
+  }, [data]);
+
+  const handleUpVoteButton = () => {
+    //console.log("Button clicked");
+    let count = votingCount + 1;
+    setVotingCount(count);
+  };
+
+  if (error) {
+    return <div>Can't find Coffee Store page!</div>;
+  }
 
   return (
     <div className={styles.layout}>
@@ -183,7 +218,7 @@ const CoffeeStore = (initialProps) => {
               height="24"
               alt="icon"
             />
-            <p className={styles.text}>1</p>
+            <p className={styles.text}>{votingCount}</p>
           </div>
 
           <button className={styles.upvoteButton} onClick={handleUpVoteButton}>
