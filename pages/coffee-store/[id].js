@@ -83,9 +83,7 @@ const CoffeeStore = (initialProps) => {
   //Add the data to the database
   const handleCreateCoffeeStore = async (coffeeStore) => {
     try {
-      const { id, location, name, imgUrl } = coffeeStore || {};
-      const region = location.region;
-      const address = location.formatted_address;
+      const { id, address, region, name, imgUrl } = coffeeStore || {};
 
       const response = await fetch("/api/createCoffeeStore", {
         method: "POST",
@@ -115,17 +113,15 @@ const CoffeeStore = (initialProps) => {
     handleCreateCoffeeStore(initialProps.coffeeStore);
   }
 
-  const { location, name, imgUrl } = kaffeeStore || {};
+  const { address, region, name, imgUrl } = kaffeeStore || {};
 
   useEffect(() => {
     if (data && data.length > 0) {
       const { address, id, imageUrl, name, region, voting } = data[0] || {};
       const modifiedData = {
         id,
-        location: {
-          region,
-          formatted_address: address,
-        },
+        address,
+        region,
         name,
         imageUrl,
         voting,
@@ -203,7 +199,7 @@ const CoffeeStore = (initialProps) => {
               height="24"
               alt="icon"
             />
-            <p className={styles.text}>{location.formatted_address}</p>
+            <p className={styles.text}>{address}</p>
           </div>
 
           <div className={styles.iconWrapper}>
@@ -213,7 +209,7 @@ const CoffeeStore = (initialProps) => {
               height="24"
               alt="icon"
             />
-            <p className={styles.text}>{location.region}</p>
+            <p className={styles.text}>{region}</p>
           </div>
 
           <div className={styles.iconWrapper}>
