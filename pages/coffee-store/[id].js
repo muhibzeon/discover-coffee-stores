@@ -20,10 +20,8 @@ import { isEmpty } from "../../utils";
 //We will show the extended infos of that store
 export async function getStaticProps(staticProps) {
   const params = staticProps.params;
-  //console.log("params", params);
 
   const coffeeStores = await fetchCoffeeStores();
-  //console.log(coffeeStores);
   const findCoffeeStoresById = coffeeStores.find((coffeeStore) => {
     return coffeeStore.fsq_id.toString() === params.id;
   });
@@ -58,7 +56,11 @@ const CoffeeStore = (initialProps) => {
 
   //###So here we are trying to render the coffee stores from the Context
   const id = router.query.id;
-  const [kaffeeStore, setKaffeStore] = useState(initialProps.coffeeStore);
+  const [kaffeeStore, setKaffeStore] = useState(initialProps.coffeeStore || {});
+  const [votingCount, setVotingCount] = useState(0);
+
+  const fetcher = (url) => fetch(url).then((res) => res.json());
+  const { data, error } = useSWR(`/api/getCoffeeStorebyId?id=${id}`, fetcher);
   const {
     state: { coffeeStores },
   } = useContext(StoreContext);
@@ -78,18 +80,9 @@ const CoffeeStore = (initialProps) => {
 
   //###Till here
 
-  //Check the fall back state
-  if (router.isFallback) {
-    return <div>Loading</div>;
-  }
-
-  //console.log(kaffeeStore);
-
   //Add the data to the database
   const handleCreateCoffeeStore = async (coffeeStore) => {
     try {
-      //console.log(coffeeStore);
-
       const { fsq_id, location, name, imgUrl } = coffeeStore;
       const id = fsq_id;
       const region = location.region;
@@ -111,7 +104,6 @@ const CoffeeStore = (initialProps) => {
       });
 
       const dbCoffeeStore = await response.json();
-      //console.log({ dbCoffeeStore });
     } catch (err) {
       console.log(err);
     }
@@ -126,15 +118,9 @@ const CoffeeStore = (initialProps) => {
 
   const { location, name, imgUrl } = kaffeeStore;
 
-  const [votingCount, setVotingCount] = useState(1);
-
-  const fetcher = (url) => fetch(url).then((res) => res.json());
-  const { data, error } = useSWR(`/api/getCoffeeStorebyId?id=${id}`, fetcher);
-
   useEffect(() => {
     if (data && data.length > 0) {
       const { address, id, imageUrl, name, region, voting } = data[0];
-
       const modifiedData = {
         fsq_id: id,
         location: {
@@ -146,21 +132,41 @@ const CoffeeStore = (initialProps) => {
         voting,
       };
 
-      console.log(data[0]);
-
       setKaffeStore(modifiedData);
       setVotingCount(data[0].voting);
     }
   }, [data]);
 
-  const handleUpVoteButton = () => {
-    //console.log("Button clicked");
-    let count = votingCount + 1;
-    setVotingCount(count);
+  //Implementing the upvote counter
+  const handleUpVoteButton = async () => {
+    try {
+      const response = await fetch("/api/favoriteCoffeeStore", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+        }),
+      });
+
+      const dbCoffeeStore = await response.json();
+      if (dbCoffeeStore && dbCoffeeStore.length > 0) {
+        let count = votingCount + 1;
+        setVotingCount(count);
+      }
+    } catch (err) {
+      console.error("Error upvoting the coffee store", err);
+    }
   };
 
   if (error) {
-    return <div>Can't find Coffee Store page!</div>;
+    return <div>Can&apos;t find Coffee Store page!</div>;
+  }
+
+  //Check the fall back state
+  if (router.isFallback) {
+    return <div>Loading</div>;
   }
 
   return (

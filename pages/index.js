@@ -41,12 +41,12 @@ export default function Home(props) {
   //const [stateCoffeeStores, setStateCoffeeStores] = useState("");
   const [coffeeStoreError, setCoffeeStoreError] = useState(null);
 
-  console.log(
+  /*console.log(
     latLong
       .split(",")
       .map((item) => item.trim())
       .join(",")
-  );
+  );*/
 
   //Lets modify the Latlong(just removing a space)
   const modifiedLatLong = latLong
@@ -64,8 +64,6 @@ export default function Home(props) {
           );
 
           const coffeeStores = await response.json();
-          //console.log({ coffeeStores });
-          //setStateCoffeeStores(fetchedCoffeeStores);
           dispatch({
             type: ACTION_TYPE.SET_COFFEE_STORES,
             payload: {
@@ -79,7 +77,7 @@ export default function Home(props) {
       }
     }
     setCoffeeStoresByLocation();
-  }, [modifiedLatLong]);
+  }, [modifiedLatLong, dispatch]);
 
   return (
     <div className={styles.container}>
@@ -131,7 +129,7 @@ export default function Home(props) {
         )}
         {props.coffeeStores.length > 0 && (
           <div className={styles.sectionWrapper}>
-            <h2 className={styles.heading2}>Toronto Store</h2>
+            <h2 className={styles.heading2}>Magdeburg Store</h2>
             <div className={styles.cardLayout}>
               {props.coffeeStores.map((coffeeStore) => (
                 <Card
