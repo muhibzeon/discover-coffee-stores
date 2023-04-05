@@ -23,7 +23,7 @@ export async function getStaticProps(staticProps) {
 
   const coffeeStores = await fetchCoffeeStores();
   const findCoffeeStoresById = coffeeStores.find((coffeeStore) => {
-    return coffeeStore.fsq_id.toString() === params.id;
+    return coffeeStore.id.toString() === params.id;
   });
 
   return {
@@ -40,7 +40,7 @@ export async function getStaticPaths() {
   const paths = coffeeStores.map((coffeestore) => {
     return {
       params: {
-        id: coffeestore.fsq_id.toString(),
+        id: coffeestore.id.toString(),
       },
     };
   });
@@ -83,8 +83,7 @@ const CoffeeStore = (initialProps) => {
   //Add the data to the database
   const handleCreateCoffeeStore = async (coffeeStore) => {
     try {
-      const { fsq_id, location, name, imgUrl } = coffeeStore;
-      const id = fsq_id;
+      const { id, location, name, imgUrl } = coffeeStore;
       const region = location.region;
       const address = location.formatted_address;
 
@@ -122,7 +121,7 @@ const CoffeeStore = (initialProps) => {
     if (data && data.length > 0) {
       const { address, id, imageUrl, name, region, voting } = data[0];
       const modifiedData = {
-        fsq_id: id,
+        id,
         location: {
           region,
           formatted_address: address,
