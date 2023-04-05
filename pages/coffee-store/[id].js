@@ -83,7 +83,7 @@ const CoffeeStore = (initialProps) => {
   //Add the data to the database
   const handleCreateCoffeeStore = async (coffeeStore) => {
     try {
-      const { id, location, name, imgUrl } = coffeeStore;
+      const { id, location, name, imgUrl } = coffeeStore || {};
       const region = location.region;
       const address = location.formatted_address;
 
@@ -115,11 +115,11 @@ const CoffeeStore = (initialProps) => {
     handleCreateCoffeeStore(initialProps.coffeeStore);
   }
 
-  const { location, name, imgUrl } = kaffeeStore;
+  const { location, name, imgUrl } = kaffeeStore || {};
 
   useEffect(() => {
     if (data && data.length > 0) {
-      const { address, id, imageUrl, name, region, voting } = data[0];
+      const { address, id, imageUrl, name, region, voting } = data[0] || {};
       const modifiedData = {
         id,
         location: {
